@@ -1,118 +1,92 @@
 import 'package:flutter/material.dart';
+
 void main() {
-  runApp(const MainApp());
+  runApp(const MyApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const HomePageStateful(title: 'Counter 2.0'),
+    return const MaterialApp(
+      home: MySuperPuperWidget(),
     );
   }
 }
 
-class HomePageStateful extends StatefulWidget {
-  final String title;
-
-  const HomePageStateful({required this.title, super.key});
+class MySuperPuperWidget extends StatefulWidget {
+  const MySuperPuperWidget({super.key});
 
   @override
-  State<HomePageStateful> createState() => _HomePageStatefulState();
+  State<MySuperPuperWidget> createState() => _MySuperPuperWidgetState();
 }
 
-class _HomePageStatefulState extends State<HomePageStateful> {
-  int _counter = 0;
-  int _incCounter = 0;
-  int _decCounter = 0;
-  bool _hasError = false;
+class _MySuperPuperWidgetState extends State<MySuperPuperWidget> {
+  final List<double> values = [0, 1, 2];
+  int currentIndex = 0;
 
-  void _incrementCounter() {
-    print('new value: $_counter');
-    setState(() {
-      _counter += 1;
-      _incCounter += 1;
-      if (_counter > 0) {
-        _hasError = false;
-      }
-    });
+  double xCoordinate = 0.0;
+  double yCoordinate = 0.0;
+  double _rotation = 0.0;
+
+  double tappedSizeFlag = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    tappedSizeFlag = getNextValue();
   }
 
-  void _decrementCounter() {
-    print('new value: $_counter');
-    setState(() {
-      if (_counter - 1 >= 0) {
-        _hasError = false;
-        _counter -= 1;
-      } else {
-        _hasError = true;
-      }
-      _decCounter += 1;
-    });
+  double getNextValue() {
+    double value = values[currentIndex];
+    currentIndex = (currentIndex + 1) % values.length;
+    return value;
   }
 
   @override
   Widget build(BuildContext context) {
-    print('build() method called');
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Your calculated sum is:',
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineLarge,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                const Text(' Increment button times:'),
-                Text('$_incCounter',
-                    style: Theme.of(context).textTheme.bodyMedium),
-                const Text(' Decrement button times:'),
-                Text(
-                  '$_decCounter',
-                  style: Theme.of(context).textTheme.bodyMedium,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            left: xCoordinate,
+            top: yCoordinate,
+            child: Center(
+              child: RotationTransition(
+                turns: AlwaysStoppedAnimation(_rotation),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  width: 150 + 100 * tappedSizeFlag,
+                  height: 150 + 100 * tappedSizeFlag,
+                  child: Image.network(
+                    'https://avatars.dzeninfra.ru/get-zen_doc/3994559/pub_6235c0593c14f46c082a5b43_6235c1ca988a6a0fb9feac2b/scale_1200',
+                  ),
                 ),
-              ],
+              ),
             ),
-            const SizedBox(
-              height: 20,
+          ),
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  tappedSizeFlag = getNextValue();
+                });
+              },
+              onPanUpdate: (details) {
+                setState(() {
+                  xCoordinate += details.delta.dx;
+                  yCoordinate += details.delta.dy;
+                });
+              },
+              onLongPress: () {
+                setState(() {
+                  _rotation += 0.4;
+                });
+              },
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                  onPressed: _incrementCounter,
-                  child: const Text('Increment'),
-                ),
-                ElevatedButton(
-                  onPressed: _decrementCounter,
-                  child: const Text('Decrement'),
-                ),
-              ],
-            ),
-            Column(
-              children: [
-                Text(_hasError ? 'Нельзя вычитать из нуля!' : '',
-                    style: const TextStyle(color: Colors.red, fontSize: 25)),
-              ],
-            )
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
